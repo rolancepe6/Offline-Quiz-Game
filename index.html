@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Offline Quiz Game</title>
+    <!-- app icons -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#667eea">
+
+<style>
+*{box-sizing:border-box}
+
+body{
+    font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+    margin:0;
+    min-height:100vh;
+}
+
+.container{
+    width:460px;
+    max-width:92vw;
+    padding:28px;
+    border-radius:16px;
+    background: #fff;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3), 0 0 1px rgba(0,0,0,0.1);
+    border: 1px solid rgba(255,255,255,0.8);
+    animation: slideUp .4s ease;
+}
+
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+h2{
+    text-align:center;
+    margin:0 0 12px 0;
+    color:#2d3748;
+    font-size:28px;
+    font-weight:700;
+}
+
+select#category{
+    width:100%;
+    padding:10px 12px;
+    border:2px solid #e2e8f0;
+    border-radius:8px;
+    background:#fff;
+    color:#2d3748;
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+    transition:all .2s ease;
+    margin-bottom:4px;
+}
+
+select#category:hover{border-color:#667eea;background:#f7fafc}
+select#category:focus{outline:none;border-color:#667eea;box-shadow:0 0 0 3px rgba(102,126,234,0.1)}
+
+button{
+    width:100%;
+    padding:12px 14px;
+    margin:6px 0;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:600;
+    font-size:14px;
+    transition:all .15s ease;
+}
+
+button:active{transform:scale(.98)}
+
+#startBtn{
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color:white;
+    box-shadow: 0 4px 15px rgba(102,126,234,0.4);
+}
+
+#startBtn:hover{
+    transform:translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102,126,234,0.6);
+}
+
+.option{
+    background:#f7fafc;
+    text-align:left;
+    padding:12px 14px;
+    color:#2d3748;
+    border:2px solid transparent;
+    transition:all .15s ease;
+}
+
+.option:hover{
+    background:#edf2f7;
+    border-color:#cbd5e0;
+    transform:translateX(4px);
+}
+
+.option:disabled{opacity:.6;cursor:not-allowed}
+
+.correct{
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+    color:white;
+    border-color:#38a169;
+    animation: correctPulse .4s ease;
+}
+
+.wrong{
+    background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+    color:white;
+    border-color:#e53e3e;
+    animation: wrongShake .4s ease;
+}
+
+@keyframes correctPulse{
+    0%{transform:scale(1)}
+    50%{transform:scale(1.02)}
+    100%{transform:scale(1)}
+}
+
+@keyframes wrongShake{
+    0%, 100%{transform:translateX(0)}
+    25%{transform:translateX(-4px)}
+    75%{transform:translateX(4px)}
+}
+
+.hidden{display:none}
+
+#score{
+    text-align:center;
+    font-weight:700;
+    margin-top:12px;
+    color:#2d3748;
+    font-size:16px;
+}
+
+.meta{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:12px;
+    gap:8px;
+}
+
+.progress{
+    height:6px;
+    background:#e2e8f0;
+    border-radius:999px;
+    overflow:hidden;
+    flex:1;
+}
+
+.progress > i{
+    display:block;
+    height:100%;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    width:0%;
+    transition:width .3s ease;
+}
+
+.small{
+    font-size:12px;
+    color:#718096;
+    font-weight:600;
+    white-space:nowrap;
+}
+
+#question{
+    color:#2d3748;
+    font-size:16px;
+    font-weight:600;
+    line-height:1.5;
+    margin:16px 0 14px 0;
+    text-align:center;
+}
+
+#options{min-height:140px}
+
+.next-button{
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color:white;
+    box-shadow: 0 4px 15px rgba(102,126,234,0.3);
+}
+
+.next-button:hover:not(:disabled){
+    transform:translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102,126,234,0.5);
+}
+
+.next-button:disabled{
+    opacity:.5;
+    cursor:not-allowed;
+    transform:none;
+}
+
+#restart{
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+    color:white;
+    box-shadow: 0 4px 15px rgba(72,187,120,0.3);
+    margin-top:12px;
+}
+
+#restart:hover{
+    transform:translateY(-2px);
+    box-shadow: 0 6px 20px rgba(72,187,120,0.5);
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>Quiz Game</h2>
+
+<div class="meta">
+    <select id="category">
+        <option value="science">Science</option>
+        <option value="movies">Movies</option>
+        <option value="music">Music</option>
+        <option value="english">English</option>
+        <option value="math">Math</option>
+    </select>
+    <div class="small">High: <span id="highscore">0</span></div>
+ </div>
+
+<button id="startBtn">Start Quiz</button>
+
+<div id="quiz" class="hidden">
+    <div class="meta">
+        <div class="small">Question <span id="qnum">1</span> / <span id="qtot">1</span></div>
+        <div class="progress" aria-hidden="true"><i id="progFill"></i></div>
+    </div>
+    <p id="question"></p>
+    <div id="options"></div>
+    <button id="nextBtn" class="next-button" disabled>Next</button>
+    <p id="score"></p>
+    <button id="restart" class="hidden">Restart</button>
+</div>
+
+</div>
+
+<script>
+
+// OFFLINE QUESTIONS DATA — pools of 50 per category.
+// Each round will pick 10 random questions from the chosen category's pool.
+const quizData = {
+    science: [
+        { question: "What do plants need to grow?", options: ["Water", "Rocks", "Sand", "Metal"], answer: "Water" },
+        { question: "Which animal can fly?", options: ["Dog", "Bird", "Fish", "Elephant"], answer: "Bird" },
+        { question: "What color is the sky on a sunny day?", options: ["Green", "Red", "Blue", "Yellow"], answer: "Blue" },
+        { question: "What do cows give us?", options: ["Eggs", "Milk", "Honey", "Wool"], answer: "Milk" },
+        { question: "How many legs does a dog have?", options: ["2", "3", "4", "6"], answer: "4" },
+        { question: "What do bees make?", options: ["Cheese", "Butter", "Honey", "Jam"], answer: "Honey" },
+        { question: "Which planet is red?", options: ["Venus", "Mercury", "Mars", "Jupiter"], answer: "Mars" },
+        { question: "What shape is the sun?", options: ["Square", "Triangle", "Circle", "Rectangle"], answer: "Circle" },
+        { question: "What sound does a cow make?", options: ["Woof", "Moo", "Roar", "Neigh"], answer: "Moo" },
+        { question: "How many sides does a triangle have?", options: ["2", "3", "4", "5"], answer: "3" },
+        { question: "What animal says 'Quack'?", options: ["Chicken", "Duck", "Turkey", "Goose"], answer: "Duck" },
+        { question: "What do fish breathe?", options: ["Air", "Water", "Oxygen through gills", "Clouds"], answer: "Oxygen through gills" },
+        { question: "What is a baby dog called?", options: ["Kitten", "Puppy", "Cub", "Foal"], answer: "Puppy" },
+        { question: "How many fingers do you have on one hand?", options: ["4", "5", "6", "10"], answer: "5" },
+        { question: "Which animal can run the fastest?", options: ["Lion", "Cheetah", "Horse", "Dog"], answer: "Cheetah" },
+        { question: "What is frozen water called?", options: ["Steam", "Snow", "Ice", "Frost"], answer: "Ice" },
+        { question: "What does a hen lay?", options: ["Stones", "Eggs", "Feathers", "Seeds"], answer: "Eggs" },
+        { question: "What color are bananas?", options: ["Red", "Green", "Yellow", "Purple"], answer: "Yellow" },
+        { question: "How many wheels does a bicycle have?", options: ["1", "2", "3", "4"], answer: "2" },
+        { question: "What do trees have?", options: ["Fins", "Leaves", "Scales", "Horns"], answer: "Leaves" },
+        { question: "Is the sun hot or cold?", options: ["Cold", "Hot", "Neither", "Warm"], answer: "Hot" },
+        { question: "What animal lives in the forest?", options: ["Fish", "Bear", "Shark", "Penguin"], answer: "Bear" },
+        { question: "How many legs does a spider have?", options: ["4", "6", "8", "10"], answer: "8" },
+        { question: "What is a group of stars called?", options: ["Galaxy", "Cloud", "Meteor", "Orbit"], answer: "Galaxy" },
+        { question: "Does a pig say 'Oink'?", options: ["No", "Yes", "Sometimes", "Only at night"], answer: "Yes" },
+        { question: "What do butterflies come from?", options: ["Cocoons", "Eggs", "Caterpillars", "Flowers"], answer: "Caterpillars" },
+        { question: "What color are most frogs?", options: ["Red", "Blue", "Green", "Yellow"], answer: "Green" },
+        { question: "How many days are in a week?", options: ["5", "6", "7", "8"], answer: "7" },
+        { question: "What do whales eat?", options: ["Plants", "Fish", "Plankton", "Meat"], answer: "Plankton" },
+        { question: "What is a baby cat called?", options: ["Puppy", "Piglet", "Kitten", "Chick"], answer: "Kitten" },
+        { question: "Does snow fall in summer?", options: ["Yes", "No", "Sometimes", "Rarely"], answer: "No" },
+        { question: "What animal has a shell?", options: ["Dog", "Turtle", "Duck", "Squirrel"], answer: "Turtle" },
+        { question: "How many eyes do most people have?", options: ["1", "2", "3", "4"], answer: "2" },
+        { question: "What is a baby swan called?", options: ["Duckling", "Chick", "Cygnet", "Gosling"], answer: "Cygnet" },
+        { question: "What color are most apples?", options: ["Yellow", "Red", "Green", "Purple"], answer: "Red" },
+        { question: "How many seasons are there?", options: ["2", "3", "4", "5"], answer: "4" },
+        { question: "What animal has big ears and is grey?", options: ["Mouse", "Elephant", "Bunny", "Donkey"], answer: "Elephant" },
+        { question: "Is the moon bigger than the sun?", options: ["Yes", "No", "Same size", "Don't know"], answer: "No" },
+        { question: "What do giraffes have that is very long?", options: ["Tail", "Legs", "Neck", "Ears"], answer: "Neck" },
+        { question: "How many stripes does a zebra have?", options: ["10", "20", "Many", "None"], answer: "Many" }
+    ],
+    movies: [
+        { question: "Which movie has a snowman named Olaf?", options: ["Frozen", "Ice Age", "Shrek", "Zootopia"], answer: "Frozen" },
+        { question: "Which movie features dinosaurs?", options: ["Avatar", "Titanic", "Jurassic Park", "Frozen"], answer: "Jurassic Park" },
+        { question: "Who directed 'Jaws'?", options: ["Steven Spielberg", "James Cameron", "Martin Scorsese", "Ridley Scott"], answer: "Steven Spielberg" },
+        { question: "What color is the DeLorean in 'Back to the Future'?", options: ["Red", "Silver", "White", "Blue"], answer: "Silver" },
+        { question: "Which franchise features 'The Force'?", options: ["Star Trek", "Star Wars", "Matrix", "Alien"], answer: "Star Wars" },
+        { question: "Which movie starred Leonardo DiCaprio as Jack?", options: ["The Revenant", "Titanic", "Inception", "Shutter Island"], answer: "Titanic" },
+        { question: "Which actor played Neo in 'The Matrix'?", options: ["Keanu Reeves", "Tom Cruise", "Brad Pitt", "Leonardo DiCaprio"], answer: "Keanu Reeves" },
+        { question: "Which film is about the sinking of the Titanic?", options: ["Titanic", "Pearl Harbor", "The Perfect Storm", "Life of Pi"], answer: "Titanic" },
+        { question: "Which director made 'E.T.'?", options: ["Steven Spielberg", "Christopher Nolan", "Peter Jackson", "Quentin Tarantino"], answer: "Steven Spielberg" },
+        { question: "Which movie series features hobbits and a ring?", options: ["Harry Potter", "Star Wars", "The Lord of the Rings", "Narnia"], answer: "The Lord of the Rings" },
+        { question: "Which film features the character 'Forrest Gump'?", options: ["Cast Away", "Forrest Gump", "Rain Man", "Big"], answer: "Forrest Gump" },
+        { question: "Which 1994 film stars Tom Hanks and tells life stories on a bench?", options: ["Forrest Gump", "Pulp Fiction", "The Shawshank Redemption", "Speed"], answer: "Forrest Gump" },
+        { question: "What movie features a character named 'Darth Vader'?", options: ["Star Wars", "Star Trek", "Battlestar Galactica", "Guardians of the Galaxy"], answer: "Star Wars" },
+        { question: "Which movie contains the line 'I'll be back'?", options: ["Terminator", "Rocky", "Die Hard", "Predator"], answer: "Terminator" },
+        { question: "Which movie features Elsa and Anna?", options: ["Tangled", "Moana", "Frozen", "Brave"], answer: "Frozen" },
+        { question: "Which film is a sci-fi heist directed by Christopher Nolan?", options: ["Tenet", "Inception", "Memento", "Interstellar"], answer: "Inception" },
+        { question: "Which movie is about a shark terrorizing a beach town?", options: ["Jaws", "Piranha", "The Shallows", "Open Water"], answer: "Jaws" },
+        { question: "Which actor voiced Woody in 'Toy Story'?", options: ["Tom Hanks", "Tim Allen", "Billy Crystal", "Michael Keaton"], answer: "Tom Hanks" },
+        { question: "Which franchise features a secret agent '007'?", options: ["Mission: Impossible", "James Bond", "Bourne", "Kingsman"], answer: "James Bond" },
+        { question: "Which movie centers on dreams within dreams?", options: ["The Matrix", "Inception", "Avatar", "The Prestige"], answer: "Inception" },
+        { question: "Which director created 'Pulp Fiction'?", options: ["Quentin Tarantino", "Martin Scorsese", "David Fincher", "Guy Ritchie"], answer: "Quentin Tarantino" },
+        { question: "Which film features a post-apocalyptic world and a character named Mad Max?", options: ["Mad Max", "The Road", "I Am Legend", "The Book of Eli"], answer: "Mad Max" },
+        { question: "Which movie is known for a spinning top and dream ambiguity?", options: ["Memento", "Inception", "Shutter Island", "The Sixth Sense"], answer: "Inception" },
+        { question: "Which 1999 sci-fi film starred Keanu Reeves?", options: ["The Matrix", "Dark City", "The Thirteenth Floor", "eXistenZ"], answer: "The Matrix" },
+        { question: "Which movie features the character 'Jack Sparrow'?", options: ["Pirates of the Caribbean", "Hook", "Treasure Island", "Master and Commander"], answer: "Pirates of the Caribbean" },
+        { question: "Which film series features a magical school called Hogwarts?", options: ["Percy Jackson", "Harry Potter", "The Chronicles of Narnia", "The Hunger Games"], answer: "Harry Potter" },
+        { question: "Which movie has a famous bench scene and a feather motif?", options: ["Forrest Gump", "Cast Away", "The Green Mile", "The Notebook"], answer: "Forrest Gump" },
+        { question: "Which film won Best Picture at the 2020 Oscars?", options: ["1917", "Parasite", "Joker", "Once Upon a Time in Hollywood"], answer: "Parasite" },
+        { question: "Which movie features the character 'Rocky Balboa'?", options: ["Raging Bull", "Creed", "Rocky", "The Fighter"], answer: "Rocky" },
+        { question: "Which film is directed by Peter Jackson and set in Middle-earth?", options: ["The Hobbit", "The Lord of the Rings", "King Kong", "Heavenly Creatures"], answer: "The Lord of the Rings" },
+        { question: "Which movie stars Meryl Streep as a fashion magazine editor?", options: ["The Devil Wears Prada", "Iron Lady", "Kramer vs. Kramer", "Sophie’s Choice"], answer: "The Devil Wears Prada" },
+        { question: "Which movie features a giant ape on Skull Island?", options: ["King Kong", "Godzilla", "Gojira", "Kong: Skull Island"], answer: "Kong: Skull Island" },
+        { question: "Which movie is known for the line 'You can't handle the truth!'?", options: ["A Few Good Men", "The Firm", "Top Gun", "The Verdict"], answer: "A Few Good Men" },
+        { question: "Which 2010 film explores space travel and time dilation?", options: ["Gravity", "Interstellar", "The Martian", "Moon"], answer: "Interstellar" },
+        { question: "Which movie features a shark and a mechanical jaw?", options: ["Jaws", "Deep Blue Sea", "The Meg", "Open Water"], answer: "Jaws" },
+        { question: "Which actor played the Joker in 'The Dark Knight'?", options: ["Heath Ledger", "Joaquin Phoenix", "Jack Nicholson", "Jared Leto"], answer: "Heath Ledger" },
+        { question: "Which film centers on a toy cowboy and an astronaut?", options: ["Toy Story", "Small Soldiers", "The Lego Movie", "WALL·E"], answer: "Toy Story" }
+    ],
+    music: [
+        { question: "What instrument has black and white keys?", options: ["Guitar", "Violin", "Piano", "Flute"], answer: "Piano" },
+        { question: "How many strings does a guitar have?", options: ["4", "5", "6", "7"], answer: "6" },
+        { question: "Is a drum a percussion instrument?", options: ["No", "Yes", "Maybe", "Sometimes"], answer: "Yes" },
+        { question: "What do you play a violin with?", options: ["Hands", "Stick", "Bow", "Picks"], answer: "Bow" },
+        { question: "What is a popular kid's song that everyone knows?", options: ["Happy Birthday", "Rock song", "Jazz", "Opera"], answer: "Happy Birthday" },
+        { question: "Does a trumpet make a loud sound?", options: ["No", "Yes", "Very quiet", "Medium"], answer: "Yes" },
+        { question: "What color is usually a fire truck?", options: ["Blue", "Red", "Yellow", "Green"], answer: "Red" },
+        { question: "How many strings does a violin have?", options: ["2", "3", "4", "5"], answer: "4" },
+        { question: "What is a person who sings called?", options: ["Dancer", "Singer", "Player", "Actor"], answer: "Singer" },
+        { question: "What instrument looks like a large violin?", options: ["Viola", "Cello", "Bass", "Guitar"], answer: "Cello" },
+        { question: "Is music loud or soft?", options: ["Only loud", "Only soft", "Both loud and soft", "Sometimes"], answer: "Both loud and soft" },
+        { question: "What do you use to hit a drum?", options: ["Hand", "Stick", "Drumsticks", "All of the above"], answer: "All of the above" },
+        { question: "Which instrument is like a small piano?", options: ["Organ", "Keyboard", "Synthesizer", "Accordion"], answer: "Keyboard" },
+        { question: "What do you call music you sing without instruments?", options: ["Rap", "A cappella", "Instrumental", "Silent"], answer: "A cappella" },
+        { question: "Is a harp a stringed instrument?", options: ["No", "Yes", "Maybe", "Don't know"], answer: "Yes" },
+        { question: "How many pedals does most pianos have?", options: ["1", "2", "3", "4"], answer: "3" },
+        { question: "What instrument lives in a horn shape?", options: ["Trumpet", "French Horn", "Saxophone", "Trombone"], answer: "French Horn" },
+        { question: "Can you sing while playing an instrument?", options: ["No", "Yes", "Only sometimes", "Maybe"], answer: "Yes" },
+        { question: "What is a group of musicians called?", options: ["Band", "Orchestra", "Both", "Team"], answer: "Both" },
+        { question: "Is a flute made of metal?", options: ["No", "Yes", "Sometimes", "It depends"], answer: "Yes" },
+        { question: "What do you do with a microphone?", options: ["Bend notes", "Amplify voice", "Play music", "Conduct"], answer: "Amplify voice" },
+        { question: "Can you play multiple drums at once?", options: ["No", "Yes", "Only one", "Never"], answer: "Yes" },
+        { question: "What kind of music do marching bands play?", options: ["Jazz", "Slow music", "March music", "Opera"], answer: "March music" },
+        { question: "Is dancing connected to music?", options: ["No", "Yes", "Maybe", "Sometimes"], answer: "Yes" },
+        { question: "What is the fastest music speed called?", options: ["Slow", "Fast", "Quick", "Allegro"], answer: "Fast" },
+        { question: "Can you sing in groups?", options: ["No", "Yes", "Only solos", "Never"], answer: "Yes" },
+        { question: "What do you call someone who writes music?", options: ["Singer", "Composer", "Director", "Teacher"], answer: "Composer" },
+        { question: "Is a rock a musical instrument?", options: ["No", "Yes", "Maybe", "Sometimes"], answer: "No" },
+        { question: "Does music make you want to move?", options: ["No", "Yes", "Maybe", "Sometimes"], answer: "Yes" },
+        { question: "What is a musical note called in jazz?", options: ["Tone", "Beat", "Jazz note", "Sound"], answer: "Tone" },
+        { question: "Can you hear music?", options: ["No", "Yes", "Maybe", "Never"], answer: "Yes" },
+        { question: "What is a song without words called?", options: ["Lyric", "Instrumental", "Verse", "Verse"], answer: "Instrumental" },
+        { question: "Is singing good exercise?", options: ["No", "Yes", "Maybe", "Sometimes"], answer: "Yes" },
+        { question: "What is the opposite of loud music?", options: ["Fast", "Slow", "Soft", "Strong"], answer: "Soft" },
+        { question: "Do all instruments sound the same?", options: ["Yes", "No", "Maybe", "Sometimes"], answer: "No" },
+        { question: "Can you play music on your phone?", options: ["No", "Yes", "Maybe", "Only old phones"], answer: "Yes" },
+        { question: "What is a musical group with strings?", options: ["Band", "Orchestra", "Trio", "Quartet"], answer: "Orchestra" },
+        { question: "Is music fun?", options: ["No", "Yes", "Maybe", "Sometimes"], answer: "Yes" },
+        { question: "What do you tap your foot to?", options: ["Lyrics", "Beat", "Words", "Silence"], answer: "Beat" },
+        { question: "Can you learn to play an instrument?", options: ["No", "Yes", "Maybe", "Only some people"], answer: "Yes" }
+    ],
+    english: [
+        { question: "What is the opposite of 'big'?", options: ["Huge", "Small", "Tall", "Large"], answer: "Small" },
+        { question: "Which word is spelled wrong?", options: ["Appl", "Apple", "Aple", "Aplle"], answer: "Appl" },
+        { question: "Is 'cat' a noun?", options: ["No", "Yes", "Maybe", "Sometimes"], answer: "Yes" },
+        { question: "What is the opposite of 'happy'?", options: ["Sad", "Mad", "Angry", "Cold"], answer: "Sad" },
+        { question: "Which sentence is correct?", options: ["She go to school.", "She goes to school.", "She going to school.", "She gone to school."], answer: "She goes to school." },
+        { question: "Is 'run' a verb?", options: ["No", "Yes", "Maybe", "Sometimes"], answer: "Yes" },
+        { question: "What is a word that sounds the same but means something different?", options: ["Synonym", "Homophone", "Simile", "Metaphor"], answer: "Homophone" },
+        { question: "Is 'blue' an adjective?", options: ["No", "Yes", "Maybe", "Sometimes"], answer: "Yes" },
+        { question: "What is the opposite of 'hot'?", options: ["Warm", "Cold", "Cool", "Warm"], answer: "Cold" },
+        { question: "What are words that mean almost the same?", options: ["Antonyms", "Synonyms", "Homonyms", "Acronyms"], answer: "Synonyms" },
+        { question: "In the alphabet, what comes after 'B'?", options: ["A", "C", "D", "E"], answer: "C" },
+        { question: "How many vowels are in the English alphabet?", options: ["3", "5", "7", "9"], answer: "5" },
+        { question: "Is a period at the end of a sentence?", options: ["No", "Yes", "Maybe", "Sometimes"], answer: "Yes" },
+        { question: "What is the opposite of 'good'?", options: ["Bad", "Evil", "Wrong", "Poor"], answer: "Bad" },
+        { question: "Which is a noun?", options: ["Run", "Happy", "Apple", "Quickly"], answer: "Apple" },
+        { question: "Does a question mark end a question?", options: ["No", "Yes", "Maybe", "Sometimes"], answer: "Yes" },
+        { question: "Is 'he' a pronoun?", options: ["No", "Yes", "Maybe", "Sometimes"], answer: "Yes" },
+        { question: "What is the plural of 'cat'?", options: ["Cats", "Catz", "Catze", "Cates"], answer: "Cats" },
+        { question: "Is 'quickly' an adverb?", options: ["No", "Yes", "Maybe", "Sometimes"], answer: "Yes" },
+        { question: "What is a word that describes a noun?", options: ["Verb", "Adjective", "Noun", "Adverb"], answer: "Adjective" },
+        { question: "Is 'in' a preposition?", options: ["No", "Yes", "Maybe", "Sometimes"], answer: "Yes" },
+        { question: "What is the opposite of 'fast'?", options: ["Quick", "Slow", "Swift", "Rapid"], answer: "Slow" },
+        { question: "Which is a verb?", options: ["Blue", "Happy", "Play", "Nice"], answer: "Play" },
+        { question: "What letter comes first in the alphabet?", options: ["B", "A", "C", "D"], answer: "A" },
+        { question: "Is 'and' a conjunction?", options: ["No", "Yes", "Maybe", "Sometimes"], answer: "Yes" },
+        { question: "What is a sentence that asks a question?", options: ["Statement", "Command", "Question", "Exclamation"], answer: "Question" },
+        { question: "What is the opposite of 'clean'?", options: ["Tidy", "Dirty", "Neat", "Messy"], answer: "Dirty" },
+        { question: "Is 'I' always capitalized?", options: ["No", "Yes", "Maybe", "Sometimes"], answer: "Yes" },
+        { question: "What is a word that means the same as 'funny'?", options: ["Sad", "Silly", "Bad", "Slow"], answer: "Silly" },
+        { question: "Do most sentences end with a period?", options: ["No", "Yes", "Maybe", "Sometimes"], answer: "Yes" },
+        { question: "What do you call a word that looks the same but sounds different?", options: ["Homophone", "Homonym", "Synonym", "Antonym"], answer: "Homonym" },
+        { question: "Is 'yellow' a color noun?", options: ["No", "Yes", "Maybe", "Sometimes"], answer: "Yes" },
+        { question: "What is the opposite of 'weak'?", options: ["Strong", "Bad", "Slow", "Tired"], answer: "Strong" },
+        { question: "Can you make a word plural by adding 's'?", options: ["No", "Yes", "Maybe", "Sometimes"], answer: "Yes" },
+        { question: "Is 'under' a preposition?", options: ["No", "Yes", "Maybe", "Sometimes"], answer: "Yes" },
+        { question: "What is a comparing word like 'more' or 'less'?", options: ["Adjective", "Adverb", "Comparative", "Superlative"], answer: "Comparative" },
+        { question: "Is 'laugh' spelled correctly?", options: ["No", "Yes", "Maybe", "It depends"], answer: "Yes" },
+        { question: "Which word is a name of a person?", options: ["Dog", "John", "Tree", "Happy"], answer: "John" },
+        { question: "Do you end a sentence with 'ment'?", options: ["No", "Yes", "Maybe", "Sometimes"], answer: "No" },
+        { question: "What is a word that describes how something is done?", options: ["Noun", "Adjective", "Adverb", "Verb"], answer: "Adverb" }
+    ],
+    math: [
+        { question: "What is 2 + 2?", options: ["3", "4", "5", "6"], answer: "4" },
+        { question: "What is 5 + 3?", options: ["7", "8", "9", "10"], answer: "8" },
+        { question: "What is 10 - 5?", options: ["4", "5", "6", "7"], answer: "5" },
+        { question: "What is 3 × 2?", options: ["5", "6", "7", "8"], answer: "6" },
+        { question: "What is 2 × 3?", options: ["5", "6", "7", "8"], answer: "6" },
+        { question: "What is 1 + 1?", options: ["1", "2", "3", "4"], answer: "2" },
+        { question: "What is 10 - 3?", options: ["6", "7", "8", "9"], answer: "7" },
+        { question: "How many sides does a square have?", options: ["3", "4", "5", "6"], answer: "4" },
+        { question: "What is 6 + 2?", options: ["7", "8", "9", "10"], answer: "8" },
+        { question: "What is 5 + 5?", options: ["8", "9", "10", "11"], answer: "10" },
+        { question: "What is 4 - 2?", options: ["1", "2", "3", "4"], answer: "2" },
+        { question: "How many sides does a triangle have?", options: ["2", "3", "4", "5"], answer: "3" },
+        { question: "What is 7 + 2?", options: ["8", "9", "10", "11"], answer: "9" },
+        { question: "What is 8 - 3?", options: ["4", "5", "6", "7"], answer: "5" },
+        { question: "What is 2 × 4?", options: ["6", "7", "8", "9"], answer: "8" },
+        { question: "What is 3 + 3?", options: ["5", "6", "7", "8"], answer: "6" },
+        { question: "What is 9 - 5?", options: ["3", "4", "5", "6"], answer: "4" },
+        { question: "How many fingers do you have?", options: ["8", "9", "10", "11"], answer: "10" },
+        { question: "What is 4 + 4?", options: ["7", "8", "9", "10"], answer: "8" },
+        { question: "What is 6 - 2?", options: ["3", "4", "5", "6"], answer: "4" },
+        { question: "What is 2 × 5?", options: ["8", "9", "10", "11"], answer: "10" },
+        { question: "What is the biggest number?", options: ["5", "10", "3", "2"], answer: "10" },
+        { question: "What is 1 + 5?", options: ["5", "6", "7", "8"], answer: "6" },
+        { question: "What is 7 - 2?", options: ["4", "5", "6", "7"], answer: "5" },
+        { question: "What is 3 × 3?", options: ["8", "9", "10", "11"], answer: "9" },
+        { question: "What is 5 - 1?", options: ["3", "4", "5", "6"], answer: "4" },
+        { question: "What is 8 + 1?", options: ["8", "9", "10", "11"], answer: "9" },
+        { question: "What is 10 + 5?", options: ["14", "15", "16", "17"], answer: "15" },
+        { question: "What is 6 + 4?", options: ["9", "10", "11", "12"], answer: "10" },
+        { question: "What is 12 - 2?", options: ["9", "10", "11", "12"], answer: "10" },
+        { question: "What is 2 + 6?", options: ["7", "8", "9", "10"], answer: "8" },
+        { question: "What is the smallest number?", options: ["0", "1", "2", "3"], answer: "0" },
+        { question: "What is 9 - 4?", options: ["4", "5", "6", "7"], answer: "5" },
+        { question: "What is 4 + 5?", options: ["8", "9", "10", "11"], answer: "9" },
+        { question: "What is 11 - 1?", options: ["9", "10", "11", "12"], answer: "10" },
+        { question: "What is 3 + 5?", options: ["7", "8", "9", "10"], answer: "8" },
+        { question: "What is 4 × 2?", options: ["6", "7", "8", "9"], answer: "8" },
+        { question: "What is 7 - 3?", options: ["3", "4", "5", "6"], answer: "4" },
+        { question: "What is 6 + 3?", options: ["8", "9", "10", "11"], answer: "9" },
+        { question: "What is 5 + 4?", options: ["8", "9", "10", "11"], answer: "9" }
+    ]
+};
+
+// Round-specific questions will be chosen from the pools above
+let roundQuestions = [];
+
+let currentCategory;
+let currentQuestionIndex = 0;
+let score = 0;
+
+let highScore = 0;
+
+// helper: Fisher-Yates shuffle
+function shuffleArray(a){
+    for(let i = a.length - 1; i > 0; i--){
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+}
+
+function updateProgress(){
+    const tot = (roundQuestions?.length) || 1;
+    const cur = currentQuestionIndex + 1;
+    const pct = Math.round((currentQuestionIndex / tot) * 100);
+    const fill = document.getElementById('progFill');
+    if(fill) fill.style.width = pct + '%';
+    const qnum = document.getElementById('qnum');
+    const qtot = document.getElementById('qtot');
+    if(qnum) qnum.textContent = cur;
+    if(qtot) qtot.textContent = tot;
+}
+
+// initialize high score display from localStorage
+document.addEventListener('DOMContentLoaded', () => {
+    try {
+        const hs = localStorage.getItem('highScore');
+        highScore = hs ? Number(hs) : 0;
+        const el = document.getElementById('highscore');
+        if(el) el.textContent = highScore;
+    } catch(e) {
+        console.log('localStorage not available');
+    }
+});
+
+// Ensure all functions are safe and wait for DOM
+if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', initializeApp);
+} else {
+    initializeApp();
+}
+
+function initializeApp(){
+    const startBtn = document.getElementById('startBtn');
+    if(startBtn){
+        startBtn.onclick = startGame;
+    }
+    
+    const nextBtn = document.getElementById('nextBtn');
+    if(nextBtn){
+        nextBtn.onclick = nextQuestion;
+    }
+    
+    const restartBtn = document.getElementById('restart');
+    if(restartBtn){
+        restartBtn.onclick = restartGame;
+    }
+}
+
+function startGame(){
+    const categorySelect = document.getElementById("category");
+    if(!categorySelect) return;
+    
+    currentCategory = categorySelect.value;
+    currentQuestionIndex = 0;
+    score = 0;
+
+    const startBtn = document.getElementById('startBtn');
+    if(startBtn) startBtn.classList.add('hidden');
+
+    const quizDiv = document.getElementById("quiz");
+    if(quizDiv) quizDiv.classList.remove("hidden");
+    
+    const scoreDiv = document.getElementById("score");
+    if(scoreDiv) scoreDiv.textContent = "";
+    
+    const restartBtn = document.getElementById("restart");
+    if(restartBtn) restartBtn.classList.add("hidden");
+    
+    const nextBtn = document.getElementById('nextBtn');
+    if(nextBtn) nextBtn.disabled = true;
+
+    // choose 10 random questions from the 50-item pool
+    roundQuestions = shuffleArray(quizData[currentCategory].slice());
+    roundQuestions = roundQuestions.slice(0, 10);
+
+    const qtotEl = document.getElementById('qtot');
+    if(qtotEl) qtotEl.textContent = roundQuestions.length;
+    
+    updateProgress();
+    showQuestion();
+}
+
+function showQuestion(){
+    const questionData = roundQuestions[currentQuestionIndex];
+    document.getElementById("question").textContent = questionData.question;
+
+    const optionsDiv = document.getElementById("options");
+    optionsDiv.innerHTML = "";
+
+    questionData.options.forEach(option => {
+        const button = document.createElement("button");
+        button.textContent = option;
+        button.classList.add("option");
+        button.onclick = () => selectAnswer(button, option);
+        optionsDiv.appendChild(button);
+    });
+
+    // ensure Next is disabled until an answer is picked
+    const nextBtn = document.getElementById('nextBtn');
+    if(nextBtn) nextBtn.disabled = true;
+    updateProgress();
+}
+
+function selectAnswer(button, selected){
+    const correctAnswer = roundQuestions[currentQuestionIndex].answer;
+    const buttons = document.querySelectorAll(".option");
+
+    buttons.forEach(btn => btn.disabled = true);
+
+    if(selected === correctAnswer){
+        button.classList.add("correct");
+        score++;
+    } else {
+        button.classList.add("wrong");
+        buttons.forEach(btn => {
+            if(btn.textContent === correctAnswer){
+                btn.classList.add("correct");
+            }
+        });
+    }
+
+    // enable Next
+    const nextBtn = document.getElementById('nextBtn');
+    if(nextBtn) nextBtn.disabled = false;
+}
+
+function nextQuestion(){
+    currentQuestionIndex++;
+
+    if(currentQuestionIndex < roundQuestions.length){
+        showQuestion();
+    } else {
+        endGame();
+    }
+}
+
+function endGame(){
+    const quizDiv = document.getElementById("quiz");
+    if(quizDiv) quizDiv.classList.add("hidden");
+    
+    const scoreDiv = document.getElementById("score");
+    if(scoreDiv) scoreDiv.textContent =
+        "Final Score: " + score + " / " + roundQuestions.length;
+    
+    const restartBtn = document.getElementById("restart");
+    if(restartBtn) restartBtn.classList.remove("hidden");
+
+    // Save high score locally (offline storage)
+    if(score > highScore){
+        highScore = score;
+        try {
+            localStorage.setItem('highScore', String(highScore));
+        } catch(e) {
+            console.log('localStorage not available');
+        }
+        const el = document.getElementById('highscore');
+        if(el) el.textContent = highScore;
+    }
+}
+
+function restartGame(){
+    startGame();
+}
+
+
+</script>
+
+<!-- Install button + service worker registration -->
+<button id="installBtn" class="hidden next-button" style="position:fixed;bottom:18px;right:18px;padding:10px 14px;border-radius:999px;z-index:999;">Install App</button>
+
+<script>
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service-worker.js')
+        .then(() => console.log('Service worker registered'))
+        .catch((err) => console.error('SW registration failed:', err));
+}
+
+let deferredPrompt;
+const installBtn = document.getElementById('installBtn');
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (installBtn) installBtn.classList.remove('hidden');
+});
+
+if (installBtn) {
+    installBtn.addEventListener('click', async () => {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        const choiceResult = await deferredPrompt.userChoice;
+        deferredPrompt = null;
+        installBtn.classList.add('hidden');
+        console.log('User choice:', choiceResult);
+    });
+}
+</script>
+
+</body>
+</html>
